@@ -3,25 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Schedule App</title>
+    <title>Class Schedule Pro</title>
+    <!-- html2canvas লাইব্রেরি যোগ করা হলো ছবি বানানোর জন্য -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
-        body { font-family: sans-serif; background-color: #f4f4f9; padding: 10px; }
-        .container { max-width: 500px; margin: auto; background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        h2, h3 { text-align: center; color: #333; margin: 5px 0; }
-        .input-group { border: 1px solid #eee; padding: 10px; margin-bottom: 10px; border-radius: 5px; background: #fafafa; }
-        .row-label { font-weight: bold; color: #007bff; display: block; margin-bottom: 5px; font-size: 14px;}
-        select, input { width: 100%; padding: 8px; margin: 3px 0; border: 1px solid #ccc; border-radius: 4px; }
-        button { width: 100%; padding: 12px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; margin-top: 10px; }
-        .btn-view { background: #007bff; color: white; }
+        :root { --primary: #007bff; --bg: #f4f7f6; }
+        body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg); padding: 15px; }
+        .container { max-width: 500px; margin: auto; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        h2 { text-align: center; color: #333; }
+        .input-group { border: 1px solid #ddd; padding: 12px; margin-bottom: 15px; border-radius: 8px; background: #fff; }
+        .row-label { font-weight: bold; color: var(--primary); display: block; margin-bottom: 8px; }
+        select, input { width: 100%; padding: 10px; margin: 4px 0; border: 1px solid #ccc; border-radius: 5px; }
+        button { width: 100%; padding: 12px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; margin-top: 10px; transition: 0.3s; }
+        .btn-view { background: var(--primary); color: white; }
+        .btn-dl { background: #28a745; color: white; margin-top: 5px; }
         .btn-back { background: #6c757d; color: white; }
         
-        /* Preview Section Styles */
-        #preview-section { display: none; }
-        .logo-img { display: block; margin: 0 auto 10px auto; width: 80px; height: auto; }
-        
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { border: 1px solid #333; padding: 8px; text-align: center; font-size: 13px; }
-        th { background: #f8f9fa; }
+        #preview-section { display: none; padding: 10px; }
+        .logo-img { display: block; margin: 0 auto 10px auto; width: 80px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; background: white; }
+        th, td { border: 1px solid #333; padding: 10px; text-align: center; font-size: 13px; }
+        th { background: #e9ecef; }
     </style>
 </head>
 <body>
@@ -29,26 +31,25 @@
 <div class="container" id="input-section">
     <h2>Schedule Entry</h2>
     <input type="text" id="date" placeholder="Date">
-    
     <div id="fields"></div>
-
     <button class="btn-view" onclick="showPreview()">View Schedule</button>
 </div>
 
-<div class="container" id="preview-section">
-    <img src="l.jpg" class="logo-img" alt="Logo">
+<div class="container" id="preview-section" style="padding: 20px;">
+    <div id="capture-area">
+        <img src="l.jpg" class="logo-img" alt="Logo" onerror="this.style.display='none'">
+        <h3>Nilphamari Medical College</h3>
+        <p style="text-align:center; font-size: 13px; margin: 0;">Batch: Arundeepto (8th Batch)</p>
+        <h3 style="margin-top: 10px; text-decoration: underline;">Class Schedule</h3>
+        <p style="text-align:center;"><strong>Date: </strong><span id="res-date"></span></p>
+        <table>
+            <thead><tr><th>Time</th><th>Subject</th><th>Topic</th><th>Teacher</th></tr></thead>
+            <tbody id="table-body"></tbody>
+        </table>
+        <p style="text-align: right; margin-top: 10px;"><i>Prepared by: CR</i></p>
+    </div>
     
-    <h3>Nilphamari Medical College</h3>
-    <p style="text-align:center; font-size: 13px; margin: 0;">Batch: Arundeepto (8th Batch)</p>
-    <h3 style="margin-top: 10px; text-decoration: underline;">Class Schedule</h3>
-    <p style="text-align:center;"><strong>Date: </strong><span id="res-date"></span></p>
-    
-    <table>
-        <thead><tr><th>Time</th><th>Subject</th><th>Topic</th><th>Teacher</th></tr></thead>
-        <tbody id="table-body"></tbody>
-    </table>
-
-    <p style="text-align: right; margin-top: 10px;"><i>Prepared by: CR</i></p>
+    <button class="btn-dl" onclick="downloadImage()">Download as Image</button>
     <button class="btn-back" onclick="hidePreview()">Back to Edit</button>
 </div>
 
@@ -61,22 +62,51 @@
 
     const scheduleTimes = ["08:00 - 10:00", "10:30 - 12:30", "12:30 - 14:30"];
 
+    // ফর্ম জেনারেটর ও ডাটা লোড
     const container = document.getElementById('fields');
     scheduleTimes.forEach((time, index) => {
         container.innerHTML += `
             <div class="input-group">
                 <span class="row-label">${time}</span>
-                <select id="sub${index}" onchange="updateTeachers(${index})">
+                <select id="sub${index}" onchange="updateTeachers(${index}); saveAll()">
                     <option value="">Select Subject</option>
                     ${Object.keys(teacherData).map(sub => `<option value="${sub}">${sub}</option>`).join('')}
                 </select>
-                <input type="text" placeholder="Topic" id="top${index}">
-                <select id="teach${index}">
+                <input type="text" placeholder="Topic" id="top${index}" oninput="saveAll()">
+                <select id="teach${index}" onchange="saveAll()">
                     <option value="">Select Teacher</option>
                 </select>
             </div>
         `;
     });
+
+    // ডাটা সেভ করার ফাংশন
+    function saveAll() {
+        const data = { date: document.getElementById('date').value };
+        scheduleTimes.forEach((_, i) => {
+            data[`sub${i}`] = document.getElementById(`sub${i}`).value;
+            data[`top${i}`] = document.getElementById(`top${i}`).value;
+            data[`teach${i}`] = document.getElementById(`teach${i}`).value;
+        });
+        localStorage.setItem('scheduleData', JSON.stringify(data));
+    }
+
+    // ডাটা লোড করার ফাংশন
+    function loadAll() {
+        const saved = localStorage.getItem('scheduleData');
+        if (saved) {
+            const data = JSON.parse(saved);
+            document.getElementById('date').value = data.date || new Date().toLocaleDateString('en-GB');
+            scheduleTimes.forEach((_, i) => {
+                document.getElementById(`sub${i}`).value = data[`sub${i}`] || '';
+                updateTeachers(i);
+                document.getElementById(`teach${i}`).value = data[`teach${i}`] || '';
+                document.getElementById(`top${i}`).value = data[`top${i}`] || '';
+            });
+        } else {
+            document.getElementById('date').value = new Date().toLocaleDateString('en-GB');
+        }
+    }
 
     function updateTeachers(index) {
         const sub = document.getElementById(`sub${index}`).value;
@@ -89,23 +119,35 @@
         }
     }
 
-    document.getElementById('date').value = new Date().toLocaleDateString('en-GB');
-
     function showPreview() {
         document.getElementById('input-section').style.display = 'none';
         document.getElementById('preview-section').style.display = 'block';
         document.getElementById('res-date').innerText = document.getElementById('date').value;
-        
         const tbody = document.getElementById('table-body');
         tbody.innerHTML = '';
-        
         scheduleTimes.forEach((time, index) => {
-            const sub = document.getElementById(`sub${index}`).value;
-            const top = document.getElementById(`top${index}`).value;
-            const teach = document.getElementById(`teach${index}`).value;
-            tbody.innerHTML += `<tr><td>${time}</td><td>${sub}</td><td>${top}</td><td>${teach}</td></tr>`;
+            tbody.innerHTML += `<tr><td>${time}</td><td>${document.getElementById(`sub${index}`).value}</td><td>${document.getElementById(`top${index}`).value}</td><td>${document.getElementById(`teach${index}`).value}</td></tr>`;
         });
     }
+
+    function downloadImage() {
+        html2canvas(document.querySelector("#capture-area"), {scale: 2}).then(canvas => {
+            const link = document.createElement('a');
+            link.download = 'Class_Schedule.png';
+            link.href = canvas.toDataURL("image/png");
+            link.click();
+        });
+    }
+
+    function hidePreview() {
+        document.getElementById('input-section').style.display = 'block';
+        document.getElementById('preview-section').style.display = 'none';
+    }
+
+    loadAll();
+</script>
+</body>
+</html>
 
     function hidePreview() {
         document.getElementById('input-section').style.display = 'block';
