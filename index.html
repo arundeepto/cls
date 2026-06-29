@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Schedule App</title>
+    <style>
+        body { font-family: sans-serif; background-color: #f4f4f9; padding: 10px; }
+        .container { max-width: 500px; margin: auto; background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        h2, h3 { text-align: center; color: #333; margin: 5px 0; }
+        .input-group { border: 1px solid #eee; padding: 10px; margin-bottom: 10px; border-radius: 5px; background: #fafafa; }
+        .row-label { font-weight: bold; color: #007bff; display: block; margin-bottom: 5px; font-size: 14px;}
+        select, input { width: 100%; padding: 8px; margin: 3px 0; border: 1px solid #ccc; border-radius: 4px; }
+        button { width: 100%; padding: 12px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; margin-top: 10px; }
+        .btn-view { background: #007bff; color: white; }
+        .btn-back { background: #6c757d; color: white; }
+        
+        /* Preview Section Styles */
+        #preview-section { display: none; }
+        .logo-img { display: block; margin: 0 auto 10px auto; width: 80px; height: auto; }
+        
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #333; padding: 8px; text-align: center; font-size: 13px; }
+        th { background: #f8f9fa; }
+    </style>
+</head>
+<body>
+
+<div class="container" id="input-section">
+    <h2>Schedule Entry</h2>
+    <input type="text" id="date" placeholder="Date">
+    
+    <div id="fields"></div>
+
+    <button class="btn-view" onclick="showPreview()">View Schedule</button>
+</div>
+
+<div class="container" id="preview-section">
+    <img src="l.jpg" class="logo-img" alt="Logo">
+    
+    <h3>Nilphamari Medical College</h3>
+    <p style="text-align:center; font-size: 13px; margin: 0;">Batch: Arundeepto (8th Batch)</p>
+    <h3 style="margin-top: 10px; text-decoration: underline;">Class Schedule</h3>
+    <p style="text-align:center;"><strong>Date: </strong><span id="res-date"></span></p>
+    
+    <table>
+        <thead><tr><th>Time</th><th>Subject</th><th>Topic</th><th>Teacher</th></tr></thead>
+        <tbody id="table-body"></tbody>
+    </table>
+
+    <p style="text-align: right; margin-top: 10px;"><i>Prepared by: CR</i></p>
+    <button class="btn-back" onclick="hidePreview()">Back to Edit</button>
+</div>
+
+<script>
+    const teacherData = {
+        "Anatomy": ["Dr. Shamima Mam", "Dr. Farzana Mam", "Dr. Noman Sir", "Dr. Anup Sir", "Dr. Millat Sir"],
+        "Biochemistry": ["Dr. Mazed Sir", "Dr. Ayesha Mam", "Dr. Hadiuzzaman Sir", "Dr. Hasinur Sir", "Dr. Naima Mam"],
+        "Physiology": ["Dr. Shila Mam", "Dr. Liza Mam", "Dr. Sara Mam", "Dr. Bipasha Mam", "Dr. Kashfi Mam", "Dr. Tritiya Mam", "Dr. Irin Mam"]
+    };
+
+    const scheduleTimes = ["08:00 - 10:00", "10:30 - 12:30", "12:30 - 14:30"];
+
+    const container = document.getElementById('fields');
+    scheduleTimes.forEach((time, index) => {
+        container.innerHTML += `
+            <div class="input-group">
+                <span class="row-label">${time}</span>
+                <select id="sub${index}" onchange="updateTeachers(${index})">
+                    <option value="">Select Subject</option>
+                    ${Object.keys(teacherData).map(sub => `<option value="${sub}">${sub}</option>`).join('')}
+                </select>
+                <input type="text" placeholder="Topic" id="top${index}">
+                <select id="teach${index}">
+                    <option value="">Select Teacher</option>
+                </select>
+            </div>
+        `;
+    });
+
+    function updateTeachers(index) {
+        const sub = document.getElementById(`sub${index}`).value;
+        const teachSelect = document.getElementById(`teach${index}`);
+        teachSelect.innerHTML = '<option value="">Select Teacher</option>';
+        if (sub && teacherData[sub]) {
+            teacherData[sub].forEach(t => {
+                teachSelect.innerHTML += `<option value="${t}">${t}</option>`;
+            });
+        }
+    }
+
+    document.getElementById('date').value = new Date().toLocaleDateString('en-GB');
+
+    function showPreview() {
+        document.getElementById('input-section').style.display = 'none';
+        document.getElementById('preview-section').style.display = 'block';
+        document.getElementById('res-date').innerText = document.getElementById('date').value;
+        
+        const tbody = document.getElementById('table-body');
+        tbody.innerHTML = '';
+        
+        scheduleTimes.forEach((time, index) => {
+            const sub = document.getElementById(`sub${index}`).value;
+            const top = document.getElementById(`top${index}`).value;
+            const teach = document.getElementById(`teach${index}`).value;
+            tbody.innerHTML += `<tr><td>${time}</td><td>${sub}</td><td>${top}</td><td>${teach}</td></tr>`;
+        });
+    }
+
+    function hidePreview() {
+        document.getElementById('input-section').style.display = 'block';
+        document.getElementById('preview-section').style.display = 'none';
+    }
+</script>
+
+</body>
+</html>
