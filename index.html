@@ -3,27 +3,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Class Schedule Pro</title>
-    <!-- html2canvas লাইব্রেরি যোগ করা হলো ছবি বানানোর জন্য -->
+    <title>Schedule Pro</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
-        :root { --primary: #007bff; --bg: #f4f7f6; }
-        body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg); padding: 15px; }
-        .container { max-width: 500px; margin: auto; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        h2 { text-align: center; color: #333; }
-        .input-group { border: 1px solid #ddd; padding: 12px; margin-bottom: 15px; border-radius: 8px; background: #fff; }
-        .row-label { font-weight: bold; color: var(--primary); display: block; margin-bottom: 8px; }
-        select, input { width: 100%; padding: 10px; margin: 4px 0; border: 1px solid #ccc; border-radius: 5px; }
-        button { width: 100%; padding: 12px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; margin-top: 10px; transition: 0.3s; }
-        .btn-view { background: var(--primary); color: white; }
-        .btn-dl { background: #28a745; color: white; margin-top: 5px; }
-        .btn-back { background: #6c757d; color: white; }
-        
-        #preview-section { display: none; padding: 10px; }
-        .logo-img { display: block; margin: 0 auto 10px auto; width: 80px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; background: white; }
-        th, td { border: 1px solid #333; padding: 10px; text-align: center; font-size: 13px; }
-        th { background: #e9ecef; }
+        :root { --primary: #2c3e50; --accent: #3498db; --bg: #eef2f3; }
+        body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg); padding: 10px; margin: 0; }
+        .container { max-width: 500px; margin: 20px auto; background: white; padding: 25px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        h2 { color: var(--primary); text-align: center; margin-bottom: 20px; }
+        .input-group { background: #f9f9f9; padding: 15px; border-radius: 12px; margin-bottom: 15px; border: 1px solid #eee; }
+        .row-label { font-weight: 600; color: var(--accent); display: block; margin-bottom: 8px; }
+        select, input { width: 100%; padding: 12px; margin: 5px 0; border: 1.5px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 15px; }
+        button { width: 100%; padding: 14px; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; margin-top: 10px; font-size: 16px; transition: 0.3s; }
+        .btn-view { background: var(--accent); color: white; }
+        .btn-clear { background: #e74c3c; color: white; } /* নতুন বাটন */
+        .btn-dl { background: #27ae60; color: white; }
+        .btn-back { background: #95a5a6; color: white; margin-top: 10px; }
+
+        #preview-section { display: none; }
+        #capture-area { background: white; padding: 40px; width: 450px; margin: auto; }
+        .logo-img { width: 90px; height: 90px; display: block; margin: 0 auto 15px auto; object-fit: contain; }
+        .title-txt { font-size: 20px; font-weight: bold; color: #2c3e50; text-align: center; margin: 5px 0; }
+        .batch-txt { font-size: 14px; color: #7f8c8d; text-align: center; margin-bottom: 15px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 25px; }
+        th { background: #34495e; color: white; padding: 12px; font-size: 14px; }
+        td { border: 1px solid #bdc3c7; padding: 12px; text-align: center; font-size: 14px; color: #333; }
+        .footer-text { text-align: right; margin-top: 20px; font-style: italic; font-size: 13px; color: #555; }
     </style>
 </head>
 <body>
@@ -32,25 +36,27 @@
     <h2>Schedule Entry</h2>
     <input type="text" id="date" placeholder="Date">
     <div id="fields"></div>
-    <button class="btn-view" onclick="showPreview()">View Schedule</button>
+    <button class="btn-view" onclick="showPreview()">Preview Schedule</button>
+    <button class="btn-clear" onclick="clearAllData()">Clear All Data</button> <!-- ক্লিয়ার বাটন -->
 </div>
 
-<div class="container" id="preview-section" style="padding: 20px;">
-    <div id="capture-area">
-        <img src="l.jpg" class="logo-img" alt="Logo" onerror="this.style.display='none'">
-        <h3>Nilphamari Medical College</h3>
-        <p style="text-align:center; font-size: 13px; margin: 0;">Batch: Arundeepto (8th Batch)</p>
-        <h3 style="margin-top: 10px; text-decoration: underline;">Class Schedule</h3>
-        <p style="text-align:center;"><strong>Date: </strong><span id="res-date"></span></p>
-        <table>
-            <thead><tr><th>Time</th><th>Subject</th><th>Topic</th><th>Teacher</th></tr></thead>
-            <tbody id="table-body"></tbody>
-        </table>
-        <p style="text-align: right; margin-top: 10px;"><i>Prepared by: CR</i></p>
+<div id="preview-section">
+    <div class="container">
+        <div id="capture-area">
+            <img src="l.jpg" class="logo-img" alt="Logo" onerror="this.style.display='none'">
+            <div class="title-txt">Nilphamari Medical College</div>
+            <div class="batch-txt">Batch: Arundeepto (8th Batch)</div>
+            <div style="text-align: center; font-weight: bold; font-size: 18px; border-bottom: 2px solid #34495e; display: inline-block; width: 100%;">Class Schedule</div>
+            <p style="text-align:center; margin-top: 10px;"><strong>Date: </strong><span id="res-date"></span></p>
+            <table>
+                <thead><tr><th>Time</th><th>Subject</th><th>Topic</th><th>Teacher</th></tr></thead>
+                <tbody id="table-body"></tbody>
+            </table>
+            <div class="footer-text">Prepared by: CR</div>
+        </div>
+        <button class="btn-dl" onclick="downloadImage()">Download as HD Image</button>
+        <button class="btn-back" onclick="hidePreview()">Back to Edit</button>
     </div>
-    
-    <button class="btn-dl" onclick="downloadImage()">Download as Image</button>
-    <button class="btn-back" onclick="hidePreview()">Back to Edit</button>
 </div>
 
 <script>
@@ -62,7 +68,6 @@
 
     const scheduleTimes = ["08:00 - 10:00", "10:30 - 12:30", "12:30 - 14:30"];
 
-    // ফর্ম জেনারেটর ও ডাটা লোড
     const container = document.getElementById('fields');
     scheduleTimes.forEach((time, index) => {
         container.innerHTML += `
@@ -80,7 +85,30 @@
         `;
     });
 
-    // ডাটা সেভ করার ফাংশন
+    // সব ডাটা মুছে ফেলার ফাংশন
+    function clearAllData() {
+        if (confirm("আপনি কি নিশ্চিত সব ডাটা মুছে ফেলতে চান?")) {
+            localStorage.removeItem('scheduleData');
+            document.getElementById('date').value = new Date().toLocaleDateString('en-GB');
+            scheduleTimes.forEach((_, i) => {
+                document.getElementById(`sub${i}`).value = '';
+                document.getElementById(`top${i}`).value = '';
+                document.getElementById(`teach${i}`).innerHTML = '<option value="">Select Teacher</option>';
+            });
+        }
+    }
+
+    function updateTeachers(index) {
+        const sub = document.getElementById(`sub${index}`).value;
+        const teachSelect = document.getElementById(`teach${index}`);
+        teachSelect.innerHTML = '<option value="">Select Teacher</option>';
+        if (sub && teacherData[sub]) {
+            teacherData[sub].forEach(t => {
+                teachSelect.innerHTML += `<option value="${t}">${t}</option>`;
+            });
+        }
+    }
+
     function saveAll() {
         const data = { date: document.getElementById('date').value };
         scheduleTimes.forEach((_, i) => {
@@ -91,7 +119,6 @@
         localStorage.setItem('scheduleData', JSON.stringify(data));
     }
 
-    // ডাটা লোড করার ফাংশন
     function loadAll() {
         const saved = localStorage.getItem('scheduleData');
         if (saved) {
@@ -108,17 +135,6 @@
         }
     }
 
-    function updateTeachers(index) {
-        const sub = document.getElementById(`sub${index}`).value;
-        const teachSelect = document.getElementById(`teach${index}`);
-        teachSelect.innerHTML = '<option value="">Select Teacher</option>';
-        if (sub && teacherData[sub]) {
-            teacherData[sub].forEach(t => {
-                teachSelect.innerHTML += `<option value="${t}">${t}</option>`;
-            });
-        }
-    }
-
     function showPreview() {
         document.getElementById('input-section').style.display = 'none';
         document.getElementById('preview-section').style.display = 'block';
@@ -131,9 +147,9 @@
     }
 
     function downloadImage() {
-        html2canvas(document.querySelector("#capture-area"), {scale: 2}).then(canvas => {
+        html2canvas(document.querySelector("#capture-area"), {scale: 3, backgroundColor: "#ffffff", useCORS: true}).then(canvas => {
             const link = document.createElement('a');
-            link.download = 'Class_Schedule.png';
+            link.download = 'Class_Schedule_8th_Batch.png';
             link.href = canvas.toDataURL("image/png");
             link.click();
         });
